@@ -1,0 +1,33 @@
+{
+  "name": "llama.cpp Server",
+  "description": "Run local LLM inference with llama.cpp. Supports custom GGUF models including 1-bit quantisation (Q1_0).",
+  "url": "https://github.com/mchubb1/llama-cpp-ha-addon",
+  "slug": "llama-cpp",
+  "version": "1.0.0",
+  "arch": ["amd64"],
+  "machine": [],
+  "startup": "application",
+  "boot": "auto",
+  "init": false,
+  "ingress": false,
+  "panel_icon": "mdi:brain",
+  "ports": {
+    "8080/tcp": 8080
+  },
+  "ports_description": {
+    "8080/tcp": "OpenAI-compatible API endpoint"
+  },
+  "host_network": false,
+  "options": {
+    "model_url": "",
+    "context_size": 2048,
+    "threads": 4,
+    "gpu_layers": 0
+  },
+  "schema": {
+    "model_url": "str",
+    "context_size": "int(512,65536)",
+    "threads": "int(1,16)",
+    "gpu_layers": "int(0,99)"
+  }
+}
