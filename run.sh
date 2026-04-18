@@ -36,9 +36,15 @@ echo "  Context size: ${CONTEXT_SIZE}"
 echo "  Threads: ${THREADS}"
 echo "  GPU layers: ${GPU_LAYERS}"
 
-export LD_LIBRARY_PATH=/opt/llama-cpp:$LD_LIBRARY_PATH
+# Find the llama-server binary
+LLAMA_BIN=$(find /opt -name "llama-server" -type f | head -1)
+if [ -z "$LLAMA_BIN" ]; then
+    echo "ERROR: llama-server binary not found"
+    exit 1
+fi
+echo "Using binary: $LLAMA_BIN"
 
-exec /opt/llama-cpp/llama-server \
+exec "$LLAMA_BIN" \
     -m "$MODEL_PATH" \
     -c "$CONTEXT_SIZE" \
     -t "$THREADS" \

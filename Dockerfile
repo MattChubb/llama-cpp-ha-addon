@@ -14,10 +14,10 @@ RUN mkdir -p /opt && \
       -o /tmp/llama.tar.gz && \
     tar xzf /tmp/llama.tar.gz -C /opt && \
     rm /tmp/llama.tar.gz && \
-    ln -s /opt/llama-${LLAMA_VERSION} /opt/llama-cpp && \
-    chmod -R +x /opt/llama-${LLAMA_VERSION}/
-
-ENV LD_LIBRARY_PATH=/opt/llama-cpp
+    chmod -R +x /opt/llama-${LLAMA_VERSION}/ && \
+    # Symlink all libraries into /usr/lib so the binary finds them
+    ln -sf /opt/llama-${LLAMA_VERSION}/lib*.so* /usr/lib/x86_64-linux-gnu/ && \
+    ldconfig
 
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
