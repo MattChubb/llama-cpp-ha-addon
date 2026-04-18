@@ -1,6 +1,17 @@
 #!/bin/bash
 set -e
 
+# Read config from HA options.json
+if [ -f /data/options.json ]; then
+    MODEL_URL=$(jq -r '.model_url // empty' /data/options.json)
+    CONTEXT_SIZE=$(jq -r '.context_size // 2048' /data/options.json)
+    THREADS=$(jq -r '.threads // 4' /data/options.json)
+    GPU_LAYERS=$(jq -r '.gpu_layers // 0' /data/options.json)
+else
+    echo "ERROR: /data/options.json not found"
+    exit 1
+fi
+
 MODEL_DIR="/data/models"
 MODEL_PATH="${MODEL_DIR}/model.gguf"
 
@@ -20,7 +31,7 @@ fi
 
 MODEL_SIZE=$(du -h "$MODEL_PATH" | cut -f1)
 echo "Model size: $MODEL_SIZE"
-echo "Starting llama.cpp server on port 8080 ..."
+echo "Starting llama.cpp server on port 8085 ..."
 echo "  Context size: ${CONTEXT_SIZE}"
 echo "  Threads: ${THREADS}"
 echo "  GPU layers: ${GPU_LAYERS}"
@@ -33,5 +44,5 @@ exec /opt/llama-cpp/llama-server \
     -t "$THREADS" \
     -ngl "$GPU_LAYERS" \
     --host 0.0.0.0 \
-    --port 8080 \
+    --port 8085 \
     --no-warmup
