@@ -5,6 +5,7 @@ RUN apt-get update && \
       curl \
       ca-certificates \
       jq \
+      libgomp1 \
       && \
     rm -rf /var/lib/apt/lists/*
 
