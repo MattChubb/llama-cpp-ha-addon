@@ -15,7 +15,6 @@ fi
 MODEL_DIR="/data/models"
 MODEL_PATH="${MODEL_DIR}/model.gguf"
 
-# Download model on first run if URL is provided
 if [ ! -f "$MODEL_PATH" ] && [ -n "$MODEL_URL" ]; then
     echo "Downloading model from $MODEL_URL ..."
     mkdir -p "$MODEL_DIR"
@@ -23,23 +22,32 @@ if [ ! -f "$MODEL_PATH" ] && [ -n "$MODEL_URL" ]; then
     echo "Model downloaded successfully."
 elif [ ! -f "$MODEL_PATH" ]; then
     echo "ERROR: No model found and no model_url configured."
-    echo "Set model_url in the add-on configuration to a GGUF file URL."
     exit 1
 else
     echo "Using existing model at $MODEL_PATH"
 fi
 
-MODEL_SIZE=$(du -h "$MODEL_PATH" | cut -f1)
-echo "Model size: $MODEL_SIZE"
-echo "Starting llama.cpp server on port 8085 ..."
-echo "  Context size: ${CONTEXT_SIZE}"
-echo "  Threads: ${THREADS}"
-echo "  GPU layers: ${GPU_LAYERS}"
-
+echo "=== DEBUG: Checking library dependencies ==="
 cd /opt/llama-cpp
 
-# Use ld.so to explicitly load with the correct library path
-# This bypasses any LD_LIBRARY_PATH stripping by the container runtime
+# Check if libggml.so symlink chain is intact
+echo "--- libggml.so symlink chain ---"
+ls -la libggml.so* 2>/dev/null
+echo "--- libggml-base.so symlink chain ---"
+ls -la libggml-base.so* 2>/dev/null
+echo "--- libllama.so symlink chain ---"
+ls -la libllama.so* 2>/dev/null
+
+# Try to manually load a CPU backend and see what error we get
+echo "--- Testing CPU backend load ---"
+LD_LIBRARY_PATH=/opt/llama-cpp ldd libggml-cpu-haswell.so 2>&1 | head -20
+
+echo "--- Testing RPC backend load (for comparison) ---"
+LD_LIBRARY_PATH=/opt/llama-cpp ldd libggml-rpc.so 2>&1 | head -20
+
+echo "=== END DEBUG ==="
+
+echo "Starting llama.cpp server..."
 exec /lib64/ld-linux-x86-64.so.2 \
     --library-path /opt/llama-cpp \
     /opt/llama-cpp/llama-server \
