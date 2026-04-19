@@ -36,14 +36,13 @@ echo "  Context size: ${CONTEXT_SIZE}"
 echo "  Threads: ${THREADS}"
 echo "  GPU layers: ${GPU_LAYERS}"
 
-# Explicitly set LD_LIBRARY_PATH and verify libraries are present
-export LD_LIBRARY_PATH=/opt/llama-cpp
-echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
-echo "Libraries found:"
-ls /opt/llama-cpp/libggml-cpu-*.so 2>/dev/null || echo "  WARNING: No CPU backend libraries found!"
-ls /opt/llama-cpp/libggml.so 2>/dev/null || echo "  WARNING: libggml.so not found!"
+cd /opt/llama-cpp
 
-exec /opt/llama-cpp/llama-server \
+# Use ld.so to explicitly load with the correct library path
+# This bypasses any LD_LIBRARY_PATH stripping by the container runtime
+exec /lib64/ld-linux-x86-64.so.2 \
+    --library-path /opt/llama-cpp \
+    /opt/llama-cpp/llama-server \
     -m "$MODEL_PATH" \
     -c "$CONTEXT_SIZE" \
     -t "$THREADS" \
